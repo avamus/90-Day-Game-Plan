@@ -27,14 +27,13 @@ const confettiColors = ["#f8b922", "#5b06be", "#4ade80"]
 
 export const TaskCard: React.FC<TaskCardProps> = ({ index, task, isCompleted, onCompletion, isStartButton }) => {
   const [showConfetti, setShowConfetti] = useState(false)
-  const [showStartButton, setShowStartButton] = useState(isStartButton)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particles = useRef<Particle[]>([])
   const animationFrame = useRef<number>()
 
   const createParticles = () => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas) return []
 
     const rect = canvas.getBoundingClientRect()
     const centerX = rect.width / 2
@@ -64,7 +63,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ index, task, isCompleted, on
 
       if (particle.y < canvas.height) {
         ctx.fillStyle = particle.color
-        ctx.fillRect(particle.x, particle.y, 4, 4)
+        ctx.fillRect(particle.x, particle.y, 3, 3)
         return true
       }
       return false
@@ -88,34 +87,28 @@ export const TaskCard: React.FC<TaskCardProps> = ({ index, task, isCompleted, on
         cancelAnimationFrame(animationFrame.current)
       }
     }
-  }, [showConfetti, animate]) // Added animate to dependencies
+  }, [showConfetti])
 
   const handleConfetti = () => {
     setShowConfetti(true)
     setTimeout(() => setShowConfetti(false), 3000)
   }
 
-  const handleStartClick = () => {
-    handleConfetti()
-    setShowStartButton(false)
-    setTimeout(() => onCompletion(index, true), 100)
-  }
-
   const crossOutAnimation = "transition-all duration-700 ease-in-out"
 
   return (
-    <Card className="bg-white shadow-md transition-all duration-300 rounded-xl hover:shadow-lg">
-      <CardContent className="p-5 relative">
+    <Card className="bg-white transition-all duration-300 rounded-xl mb-2">
+      <CardContent className="p-3 relative">
         {showConfetti && (
-          <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" width={300} height={100} />
+          <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" width={300} height={80} />
         )}
-        <div className="flex flex-col space-y-4">
+        <div className="flex flex-col space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center flex-grow">
               <div className="flex flex-col">
                 <h4
                   className={cn(
-                    "font-bold text-lg",
+                    "font-semibold text-[15px]",
                     crossOutAnimation,
                     isCompleted
                       ? "text-[#4ade80] line-through opacity-80 transform scale-100 rotate-1"
@@ -126,14 +119,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({ index, task, isCompleted, on
                 </h4>
               </div>
             </div>
-            <div className="flex items-center justify-center w-24">
+            <div className="flex items-center justify-center w-16">
               {isStartButton && !isCompleted ? (
                 <Button
                   onClick={() => {
                     handleConfetti()
                     onCompletion(index, true)
                   }}
-                  className="bg-[#f8b922] hover:bg-[#e5a91f] text-white rounded-full px-6 py-2 text-sm font-medium transition-all duration-300 transform hover:scale-105"
+                  className="bg-[#f8b922] hover:bg-[#e5a91f] text-white rounded-full px-3 py-1 text-xs font-medium transition-all duration-300 transform hover:scale-105"
                 >
                   Start
                 </Button>
@@ -147,11 +140,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({ index, task, isCompleted, on
                     setTimeout(() => onCompletion(index, checked === true), 100)
                   }}
                   className={cn(
-                    "h-8 w-8 border-2 rounded-md transition-all duration-300",
+                    "h-6 w-6 border-2 rounded-md transition-all duration-300",
                     "data-[state=checked]:bg-[#f8b922] data-[state=checked]:border-[#f8b922]",
-                    "border-[#f8b922] hover:border-[#e5a91f] hover:shadow-[0_0_15px_rgba(248,185,34,0.3)]",
+                    "border-[#f8b922] hover:border-[#e5a91f]",
                     "data-[state=checked]:hover:bg-[#e5a91f] data-[state=checked]:hover:border-[#e5a91f]",
-                    "data-[state=checked]:hover:shadow-[0_0_15px_rgba(248,185,34,0.3)]",
                     "flex items-center justify-center",
                   )}
                 />
