@@ -22,6 +22,7 @@ const GamePlanDashboard: React.FC<GamePlanDashboardProps> = ({ username = "Lucas
   const [activeTab, setActiveTab] = useState<"calendar" | "activity">("calendar")
   const [completedQuestIds, setCompletedQuestIds] = useState<string[]>([])
   const [currentDay, setCurrentDay] = useState(26) // January 26, 2025
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   // Add some pre-completed quests for past days
   useEffect(() => {
@@ -77,110 +78,100 @@ const GamePlanDashboard: React.FC<GamePlanDashboardProps> = ({ username = "Lucas
     "making important decisions?",
   ]
 
-  const solutions = [
-    "Stress Management",
-    "Confidence Building",
-    "Goal Setting",
-    "Work-Life Balance",
-    "Time Management",
-    "Communication Skills",
-    "Performance Anxiety",
-    "Rejection Management",
-    "Decision Making Skills",
-  ]
-
-  const [currentIndex, setCurrentIndex] = useState(0)
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % challenges.length)
     }, 5000) // Change every 5 seconds
 
     return () => clearInterval(interval)
-  }, [])
+  }, [challenges.length])
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 bg-white rounded-3xl shadow-lg border border-gray-200">
+    <div className="w-full bg-white rounded-2xl border border-[#ddd] overflow-hidden p-2 sm:p-3" style={{height: "700px"}}>
       {/* Header Section and Overall Progress */}
-      <Card className="mb-6 border border-gray-200">
-        <CardContent className="p-4 sm:p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4">
+      <Card className="mb-2">
+        <CardContent className="p-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3 mb-2">
             <div className="lg:col-span-1">
-              <h2 className="text-lg sm:text-xl font-semibold text-[#5b06be]">Welcome back {username}!</h2>
+              <h2 className="text-[21px] font-bold text-[#5b06be]">Welcome back {username}!</h2>
             </div>
-            <div className="lg:col-span-2">
-              <h2 className="text-lg sm:text-xl font-semibold text-[#5b06be] text-right">
-                Your 90 Day Game Plan to hit $10,000 per month.
-              </h2>
+            <div className="lg:col-span-2 flex justify-start lg:justify-end">
+            <div style={{width: "280px", display: "block"}} className="relative bg-gradient-to-r from-[#5b06be] to-[#4a05a8] p-1 rounded-xl shadow-[0_0_15px_rgba(91,6,190,0.4)] mt-2 sm:mt-0">
+  <div className="bg-white bg-opacity-10 px-2 py-2 rounded-lg flex items-center justify-center">
+    <h2 className="text-[21px] font-bold text-white whitespace-nowrap">
+      Your 90 Day Game Plan
+    </h2>
+  </div>
+</div>
             </div>
           </div>
-          <ProgressBar value={progress} label="Overall Progress" />
-          <div className="mt-4 text-sm text-gray-600 italic">
-            <p>
-              &quot;When you hit that halfway point and your mind&apos;s begging you to quit - that&apos;s when the real
-              growth begins. Most people quit at 50%, be the one who pushes through.&quot;
-            </p>
-            <p className="text-right font-semibold mt-1">- David Goggins</p>
+          <ProgressBar progress={progress} />
+          <div className="flex flex-col sm:flex-row justify-between items-baseline mt-2 text-xs text-gray-600 italic">
+            <p className="mr-2">&quot;When you hit that halfway point and your mind&apos;s begging you to quit - that&apos;s when the real growth begins. Most people quit at 50%, be the one who pushes through.&quot;</p>
+            <span className="font-semibold shrink-0 mt-1 sm:mt-0">- David Goggins</span>
           </div>
         </CardContent>
       </Card>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2" style={{height: "580px"}}>
         {/* Left Column - Tasks and Mindset Coach */}
-        <div className="space-y-4">
-          {/* Daily Tasks Container */}
-          <Card className="bg-white shadow-md rounded-xl overflow-hidden border border-gray-200">
-            <CardContent className="p-4">
-              <div className="mb-3 flex items-center gap-2">
-                <Image
-                  src="https://res.cloudinary.com/drkudvyog/image/upload/v1737454406/Daily_quests_icon_duha_hh7svb.png"
-                  alt="Daily Quests icon"
-                  width={24}
-                  height={24}
-                />
-                <h3 className="text-lg font-semibold text-[#5b06be]">Daily Quests</h3>
-              </div>
-              <p className="text-sm text-gray-600 mb-3">Complete all to complete today's challenge</p>
-              <div className="space-y-2">
-                {dailyQuests.map((quest, index) => (
-                  <TaskCard
-                    key={quest.id}
-                    index={index}
-                    task={quest.title}
-                    isCompleted={completedQuestIds.includes(quest.id)}
-                    onCompletion={(index, completed) => handleQuestCompletion(quest.id, completed)}
-                    isStartButton={index === 0} // Make the first task a "Start" button
+        <div className="flex flex-col gap-2" style={{height: "580px"}}>
+  {/* Daily Tasks Container - FIXED HEIGHT */}
+  <div className="relative bg-gradient-to-r from-[#fbb350]/5 to-[#fbb350]/5 p-0.5 rounded-xl border-2 border-[#fbb350]" style={{height: "300px"}}>
+    <Card className="h-full bg-white rounded-xl">
+      <CardContent className="p-2 h-full overflow-y-auto">
+                <div className="mb-2 flex items-center gap-2">
+                  <Image
+                    src="https://res.cloudinary.com/drkudvyog/image/upload/v1737454406/Daily_quests_icon_duha_hh7svb.png"
+                    alt="Daily Quests icon"
+                    width={20}
+                    height={20}
+                    className="object-contain"
                   />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <h3 className="text-[21px] font-bold text-[#5b06be]">Daily Quests</h3>
+                </div>
+                <p className="text-[15px] font-semibold text-gray-600 mb-2">Complete all to complete today's challenge</p>
+                <div className="h-[calc(100%-40px)] overflow-auto">
+                  {dailyQuests.map((quest, index) => (
+                    <TaskCard
+                      key={quest.id}
+                      index={index}
+                      task={quest.title}
+                      isCompleted={completedQuestIds.includes(quest.id)}
+                      onCompletion={(index, completed) => handleQuestCompletion(quest.id, completed)}
+                      isStartButton={index === 0}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Mindset Coach Card */}
-          <Card className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
-            <CardContent className="p-4 sm:p-6 text-center">
-              <div className="flex justify-center items-center gap-4 mb-4 sm:mb-5">
-                <div className="rounded-full p-1 bg-yellow-400">
+          <Card className="bg-white shadow-sm rounded-xl overflow-hidden border border-[#ddd]" style={{height: "260px", marginTop: "10px"}}>
+          <CardContent className="p-2 h-full overflow-y-auto">
+              <div className="flex justify-center items-center gap-2 sm:gap-3 mb-2">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20">
                   <Image
                     src="https://res.cloudinary.com/drkudvyog/image/upload/v1736936837/a-4k-portrait-of-a-welcoming-psychologis_jTEXFrX9RbWYuR_RT-j4cw_pJ49vj_zRoWtsmdXImwTyw_rp9p7y.png"
                     alt="Mindset Coach portrait 1"
-                    width={96}
-                    height={96}
-                    className="rounded-full"
+                    width={80}
+                    height={80}
+                    className="rounded-xl object-cover border-2 border-[#fbb350]"
                   />
                 </div>
-                <div className="rounded-full p-1 bg-yellow-400">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20">
                   <Image
                     src="https://res.cloudinary.com/drkudvyog/image/upload/v1736936837/a-4k-portrait-of-a-compassionate-psychol_FZgjDzHhSayBd1WXqfn0Yg_JQHL4O8cQJusiVDlrhz11A_xcwa5j.png"
                     alt="Mindset Coach portrait 2"
-                    width={96}
-                    height={96}
-                    className="rounded-full"
+                    width={80}
+                    height={80}
+                    className="rounded-xl object-cover border-2 border-[#fbb350]"
                   />
                 </div>
               </div>
-              <h3 className="text-black text-lg sm:text-xl font-bold mb-2 sm:mb-3">Are you struggling with...</h3>
+              <h3 className="text-[19px] font-black mb-1 sm:mb-2">Are you struggling with...</h3>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentIndex}
@@ -188,79 +179,107 @@ const GamePlanDashboard: React.FC<GamePlanDashboardProps> = ({ username = "Lucas
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.5 }}
-                  className="h-8 mb-2" // Fixed height to prevent layout shift
+                  className="h-6 mb-1 sm:mb-2" // Fixed height to prevent layout shift
                 >
-                  <p className="text-[#5b06be] font-semibold">{challenges[currentIndex]}</p>
+                  <p className="text-[15px] font-semibold text-[#5b06be]">{challenges[currentIndex]}</p>
                 </motion.div>
               </AnimatePresence>
-              <div className="flex justify-center mt-4">
+              <div className="flex justify-center mt-2 sm:mt-3">
                 <Button
-                  className="bg-black hover:bg-black/90 text-white font-medium rounded-full px-8 py-3 text-lg transition-all duration-300 flex items-center gap-2 shadow-[0_0_20px_rgba(91,6,190,0.5)] hover:shadow-[0_0_30px_rgba(91,6,190,0.7)]"
+                  className="bg-black hover:bg-black/90 text-white font-medium rounded-full px-4 py-1 sm:px-6 sm:py-2 text-xs sm:text-sm transition-all duration-300 flex items-center gap-1 shadow-[0_0_10px_rgba(91,6,190,0.3)] hover:shadow-[0_0_20px_rgba(91,6,190,0.5)]"
                   onClick={() => (window.location.href = "/mindset-coach")}
                 >
-                  Find Solutions <span className="text-xl">→</span>
+                  Find Solutions <span className="text-sm sm:text-base">→</span>
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column - Progress and Stats */}
-        <div className="lg:col-span-2 flex justify-center">
-          <Card className="bg-white shadow-md w-full rounded-xl border border-gray-200">
-            <CardContent className="p-2 sm:p-4 h-[500px] sm:h-[600px] flex flex-col">
-              {/* Progress Indicators */}
-              <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-2">
-                <Button
-                  className={cn(
-                    "bg-white text-black rounded-full w-full text-xs sm:text-sm py-3 sm:py-4 shadow-sm hover:bg-gray-50 flex items-center justify-center gap-2",
-                    activeTab === "calendar" && "bg-gray-50",
-                  )}
-                  onClick={() => setActiveTab("calendar")}
-                >
-                  <Image
-                    src="https://res.cloudinary.com/drkudvyog/image/upload/v1733943686/Calendar_Streak_icon_duha_kwl5pf.png"
-                    alt="Calendar Streak icon"
-                    width={16}
-                    height={16}
-                    className="text-[#5b06be]"
-                  />
-                  <span>Calendar & Challenge</span>
-                </Button>
-                <Button
-                  className={cn(
-                    "bg-white text-black rounded-full w-full text-xs sm:text-sm py-3 sm:py-4 shadow-sm hover:bg-gray-50 flex items-center justify-center gap-2",
-                    activeTab === "activity" && "bg-gray-50",
-                  )}
-                  onClick={() => setActiveTab("activity")}
-                >
-                  <Image
-                    src="https://res.cloudinary.com/drkudvyog/image/upload/v1733749804/Target_icon_ghep9p.png"
-                    alt="Target icon"
-                    width={16}
-                    height={16}
-                    className="text-[#5b06be]"
-                  />
-                  <span>Activity</span>
-                </Button>
-              </div>
-
-              {/* Content Area */}
-              <div className="flex-grow overflow-auto">
-                {activeTab === "calendar" && (
-                  <CalendarStreak
-                    allDailyTasksCompleted={allTasksCompleted}
-                    completedQuestIds={completedQuestIds}
-                    onQuestCompletion={handleQuestCompletion}
-                    currentDay={currentDay}
-                  />
-                )}
-                {activeTab === "activity" && <ActivityCircles />}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="md:col-span-2" style={{height: "580px", position: "relative"}}>
+  <div className="absolute inset-0">
+    <Card className="h-full bg-white border border-[#ddd] rounded-xl">
+      <CardContent className="p-2 h-full">
+        {/* Progress Indicators */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-1">
+          <Button
+            variant="ghost"
+            className={cn(
+              "bg-white text-black rounded-full w-full text-[10px] xs:text-xs sm:text-sm py-1 sm:py-2 border border-[#ddd] flex items-center justify-center gap-1 sm:gap-2",
+              activeTab === "calendar" && "bg-gray-90",
+              activeTab !== "calendar" && "bg-white"
+            )}
+            onClick={() => setActiveTab("calendar")}
+          >
+            <Image
+              src="https://res.cloudinary.com/drkudvyog/image/upload/v1733943686/Calendar_Streak_icon_duha_kwl5pf.png"
+              alt="Calendar Streak icon"
+              width={12}
+              height={12}
+              className="text-[#5b06be]"
+            />
+            <span>Calendar & Challenge</span>
+          </Button>
+          <Button
+            variant="ghost"
+            className={cn(
+              "bg-white text-black rounded-full w-full text-[10px] xs:text-xs sm:text-sm py-1 sm:py-2 border border-[#ddd] flex items-center justify-center gap-1 sm:gap-2",
+              activeTab === "activity" && "bg-gray-90",
+              activeTab !== "activity" && "bg-white"
+            )}
+            onClick={() => setActiveTab("activity")}
+          >
+            <Image
+              src="https://res.cloudinary.com/drkudvyog/image/upload/v1733749804/Target_icon_ghep9p.png"
+              alt="Target icon"
+              width={12}
+              height={12}
+              className="text-[#5b06be]"
+            />
+            <span>Activity</span>
+          </Button>
         </div>
-      </div>
+
+        {/* Fixed height container for tab content */}
+        <div style={{height: "500px", position: "relative", marginTop: "10px"}}>
+          {/* Calendar content */}
+          <div style={{
+            position: "absolute", 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            opacity: activeTab === "calendar" ? 1 : 0,
+            visibility: activeTab === "calendar" ? "visible" : "hidden",
+            transition: "opacity 0.3s ease"
+          }}>
+            <CalendarStreak
+              allDailyTasksCompleted={allTasksCompleted}
+              completedQuestIds={completedQuestIds}
+              onQuestCompletion={handleQuestCompletion}
+              currentDayProp={currentDay}
+            />
+          </div>
+          
+          {/* Activity content */}
+          <div style={{
+            position: "absolute", 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            opacity: activeTab === "activity" ? 1 : 0,
+            visibility: activeTab === "activity" ? "visible" : "hidden",
+            transition: "opacity 0.3s ease"
+          }}>
+            <ActivityCircles />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+</div>
+</div>
     </div>
   )
 }
