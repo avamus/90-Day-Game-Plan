@@ -1,4 +1,5 @@
 "use client"
+
 import { motion } from "framer-motion"
 import { RotateCcw } from "lucide-react"
 
@@ -6,23 +7,24 @@ interface ActivityData {
   label: string
   value: number
   progress: number
+  unit: string
 }
 
 export function ActivityCircles() {
   const activities: ActivityData[] = [
-    { label: "TODAY", value: 0, progress: 0 },
-    { label: "THIS WEEK", value: 1, progress: 15 },
-    { label: "THIS MONTH", value: 6, progress: 20 },
-    { label: "THIS YEAR", value: 6, progress: 10 },
+    { label: "TODAY", value: 0, progress: 0, unit: "minutes" },
+    { label: "THIS WEEK", value: 1, progress: 15, unit: "minutes" },
+    { label: "THIS MONTH", value: 6, progress: 20, unit: "minutes" },
+    { label: "THIS YEAR", value: 6, progress: 10, unit: "minutes" },
   ]
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-xl font-semibold text-[#5b06be]">Training Time Tracker</h2>
+      <div className="flex items-center gap-2 mb-3">
+        <h2 className="text-[21px] font-bold text-[#5b06be]">Training Time Tracker</h2>
       </div>
-      <div className="bg-white rounded-xl p-4 flex-grow mb-2">
-      <div className="grid grid-cols-4 gap-6 mb-8">
+      <div className="bg-white rounded-xl p-2 sm:p-3 flex-grow flex flex-col">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
           {activities.map((activity, index) => (
             <motion.div
               key={index}
@@ -31,8 +33,8 @@ export function ActivityCircles() {
               animate={{ opacity: 1, rotateY: 0, translateZ: 0 }}
               transition={{ duration: 0.8, delay: index * 0.1, type: "spring" }}
             >
-              <div className="relative w-full aspect-square bg-white rounded-2xl shadow-lg flex flex-col items-center justify-center p-2 sm:p-4 transform transition-all duration-500 ease-out group-hover:scale-105 group-hover:rotate-3">
-                <div className="relative w-full aspect-square max-w-[150px]">
+              <div className="relative w-full aspect-square bg-white rounded-xl border border-[#ddd] flex flex-col items-center justify-center p-1 sm:p-2 transform transition-all duration-500 ease-out group-hover:scale-105 group-hover:rotate-3">
+                <div className="relative w-full aspect-square max-w-[100px] sm:max-w-[120px]">
                   <svg className="w-full h-full" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r="45" fill="none" stroke="#f0f0f0" strokeWidth="8" />
                     <circle
@@ -64,51 +66,52 @@ export function ActivityCircles() {
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl font-bold text-[#5b06be]">{activity.value}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-[#5b06be]">{activity.value}</span>
+                    <span className="text-xs sm:text-sm text-gray-600 mt-0.5">{activity.unit}</span>
                   </div>
                 </div>
-                <span className="text-sm font-medium text-gray-600 uppercase tracking-wider mt-4">
+                <span className="text-xs font-medium text-gray-600 uppercase tracking-wider mt-2">
                   {activity.label}
                 </span>
               </div>
             </motion.div>
           ))}
         </div>
+
+        {/* Bottom Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+          {/* Quote of the Day */}
+          <div className="border border-[#ddd] rounded-xl p-2 sm:p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-[19px] font-black text-[#5b06be]">Quote of the Day</h4>
+              <button className="text-gray-400 hover:text-gray-600">
+                <RotateCcw className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="bg-white rounded-xl border border-[#ddd] p-2 sm:p-3 flex flex-col justify-between h-[calc(100%-2.5rem)]">
+              <p className="text-center text-[15px] font-semibold">
+                "Don't wish it were easier, wish you were better."
+              </p>
+              <p className="text-right text-gray-600 mt-3 text-sm">Jim Rohn</p>
+            </div>
+          </div>
+
+          {/* Daily Insight */}
+          <div className="border border-[#ddd] rounded-xl p-2 sm:p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-[19px] font-black text-[#5b06be]">Daily Insight</h4>
+              <button className="text-gray-400 hover:text-gray-600">
+                <RotateCcw className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="bg-white rounded-xl border border-[#ddd] p-2 sm:p-3 flex items-center h-[calc(100%-2.5rem)]">
+              <p className="text-[15px] font-semibold">
+                Worth remembering: sharing tenant screening through situation examples rather than rules.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-
-   {/* Bottom Cards */}
-   <div className="grid grid-cols-2 gap-6 mt-8">
-  {/* Quote of the Day */}
-  <div>
-    <div className="flex items-center justify-between mb-4">
-      <h4 className="text-[#5b06be] text-xl font-bold">Quote of the Day</h4>
-      <button className="text-gray-400 hover:text-gray-600">
-        <RotateCcw className="h-5 w-5" />
-      </button>
-    </div>
-    <div className="bg-white rounded-xl shadow-sm p-6 h-full flex flex-col justify-between">
-      <p className="text-center text-lg font-medium">
-        "Don't wish it were easier, wish you were better."
-      </p>
-      <p className="text-right text-gray-600 mt-4">Jim Rohn</p>
-    </div>
-  </div>
-
-  {/* Daily Insight */}
-  <div>
-    <div className="flex items-center justify-between mb-4">
-      <h4 className="text-[#5b06be] text-xl font-bold">Daily Insight</h4>
-      <button className="text-gray-400 hover:text-gray-600">
-        <RotateCcw className="h-5 w-5" />
-      </button>
-    </div>
-    <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center">
-      <p className="text-lg">
-        Worth remembering: sharing tenant screening through situation examples rather than rules.
-      </p>
-    </div>
-  </div>
-</div>
     </div>
   )
 }
