@@ -15,9 +15,13 @@ import { motion, AnimatePresence } from "framer-motion"
 
 interface GamePlanDashboardProps {
   username?: string
+  memberId?: string
 }
 
-const GamePlanDashboard: React.FC<GamePlanDashboardProps> = ({ username = "Lucas" }) => {
+const GamePlanDashboard: React.FC<GamePlanDashboardProps> = ({ 
+  username = "Lucas",
+  memberId = "mem_sb_cm3hxvar60n1i0st00arb0dtz" // Default member ID if not provided
+}) => {
   const [progress, setProgress] = useState(30)
   const [activeTab, setActiveTab] = useState<"calendar" | "activity">("calendar")
   const [completedQuestIds, setCompletedQuestIds] = useState<string[]>([])
@@ -118,35 +122,9 @@ const GamePlanDashboard: React.FC<GamePlanDashboardProps> = ({ username = "Lucas
         {/* Left Column - Tasks and Mindset Coach */}
         <div className="flex flex-col gap-2" style={{height: "580px"}}>
   {/* Daily Tasks Container - FIXED HEIGHT */}
-  <div className="relative bg-gradient-to-r from-[#fbb350]/5 to-[#fbb350]/5 p-0.5 rounded-xl border-2 border-[#fbb350]" style={{height: "300px"}}>
-    <Card className="h-full bg-white rounded-xl">
-      <CardContent className="p-2 h-full overflow-y-auto">
-                <div className="mb-2 flex items-center gap-2">
-                  <Image
-                    src="https://res.cloudinary.com/drkudvyog/image/upload/v1737454406/Daily_quests_icon_duha_hh7svb.png"
-                    alt="Daily Quests icon"
-                    width={20}
-                    height={20}
-                    className="object-contain"
-                  />
-                  <h3 className="text-[21px] font-bold text-[#5b06be]">Daily Quests</h3>
-                </div>
-                <p className="text-[15px] font-semibold text-gray-600 mb-2">Complete all to complete today's challenge</p>
-                <div className="h-[calc(100%-40px)] overflow-auto">
-                  {dailyQuests.map((quest, index) => (
-                    <TaskCard
-                      key={quest.id}
-                      index={index}
-                      task={quest.title}
-                      isCompleted={completedQuestIds.includes(quest.id)}
-                      onCompletion={(index, completed) => handleQuestCompletion(quest.id, completed)}
-                      isStartButton={index === 0}
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+<div style={{height: "300px"}}>
+  <QuestList />
+</div>
 
           {/* Mindset Coach Card */}
           <Card className="bg-white shadow-sm rounded-xl overflow-hidden border border-[#ddd]" style={{height: "260px", marginTop: "10px"}}>
@@ -253,11 +231,15 @@ const GamePlanDashboard: React.FC<GamePlanDashboardProps> = ({ username = "Lucas
             visibility: activeTab === "calendar" ? "visible" : "hidden",
             transition: "opacity 0.3s ease"
           }}>
+            {/* Display the memberId to verify it's being passed correctly */}
+            <div className="text-xs text-gray-500 mb-1">Member ID: {memberId}</div>
+            
             <CalendarStreak
               allDailyTasksCompleted={allTasksCompleted}
               completedQuestIds={completedQuestIds}
               onQuestCompletion={handleQuestCompletion}
               currentDayProp={currentDay}
+              memberId={memberId} // Pass the memberId to the CalendarStreak component
             />
           </div>
           
