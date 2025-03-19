@@ -13,6 +13,7 @@ interface TaskCardProps {
   isCompleted: boolean
   onCompletion: (index: number, completed: boolean) => void
   isStartButton?: boolean
+  isDisabled?: boolean
 }
 
 interface Particle {
@@ -25,7 +26,14 @@ interface Particle {
 
 const confettiColors = ["#f8b922", "#5b06be", "#4ade80"]
 
-export const TaskCard: React.FC<TaskCardProps> = ({ index, task, isCompleted, onCompletion, isStartButton }) => {
+export const TaskCard: React.FC<TaskCardProps> = ({ 
+  index, 
+  task, 
+  isCompleted, 
+  onCompletion, 
+  isStartButton,
+  isDisabled = false 
+}) => {
   const [showConfetti, setShowConfetti] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particles = useRef<Particle[]>([])
@@ -94,10 +102,22 @@ export const TaskCard: React.FC<TaskCardProps> = ({ index, task, isCompleted, on
     setTimeout(() => setShowConfetti(false), 3000)
   }
 
+  const handleCompletion = (checked: boolean) => {
+    if (isDisabled) return;
+    
+    if (checked === true && !isCompleted) {
+      handleConfetti();
+    }
+    setTimeout(() => onCompletion(index, checked === true), 100);
+  };
+
   const crossOutAnimation = "transition-all duration-700 ease-in-out"
 
   return (
-    <Card className="bg-white transition-all duration-300 rounded-xl mb-2">
+    <Card className={cn(
+      "bg-white transition-all duration-300 rounded-xl mb-2",
+      isDisabled && !isCompleted && "opacity-60"
+    )}>
       <CardContent className="p-3 relative">
         {showConfetti && (
           <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" width={300} height={80} />
@@ -122,29 +142,27 @@ export const TaskCard: React.FC<TaskCardProps> = ({ index, task, isCompleted, on
             <div className="flex items-center justify-center w-16">
               {isStartButton && !isCompleted ? (
                 <Button
-                  onClick={() => {
-                    handleConfetti()
-                    onCompletion(index, true)
-                  }}
-                  className="bg-[#f8b922] hover:bg-[#e5a91f] text-white rounded-full px-3 py-1 text-xs font-medium transition-all duration-300 transform hover:scale-105"
+                  onClick={() => !isDisabled && handleCompletion(true)}
+                  className={cn(
+                    "bg-[#f8b922] hover:bg-[#e5a91f] text-white rounded-full px-3 py-1 text-xs font-medium transition-all duration-300 transform hover:scale-105",
+                    isDisabled && "opacity-50 cursor-not-allowed hover:bg-[#f8b922] hover:scale-100"
+                  )}
+                  disabled={isDisabled}
                 >
                   Start
                 </Button>
               ) : (
                 <Checkbox
                   checked={isCompleted}
-                  onCheckedChange={(checked) => {
-                    if (checked === true && !isCompleted) {
-                      handleConfetti()
-                    }
-                    setTimeout(() => onCompletion(index, checked === true), 100)
-                  }}
+                  onCheckedChange={handleCompletion}
+                  disabled={isDisabled && !isCompleted}
                   className={cn(
                     "h-6 w-6 border-2 rounded-md transition-all duration-300",
                     "data-[state=checked]:bg-[#f8b922] data-[state=checked]:border-[#f8b922]",
                     "border-[#f8b922] hover:border-[#e5a91f]",
                     "data-[state=checked]:hover:bg-[#e5a91f] data-[state=checked]:hover:border-[#e5a91f]",
                     "flex items-center justify-center",
+                    isDisabled && !isCompleted && "opacity-50 cursor-not-allowed"
                   )}
                 />
               )}
