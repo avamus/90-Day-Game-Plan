@@ -2,6 +2,9 @@
 
 import { motion } from "framer-motion"
 import { RotateCcw } from "lucide-react"
+import { useEffect, useState } from "react"
+import { quotes } from "@/lib/quotes"
+import { getRandomFocusMessage } from "@/lib/focusMessages"
 
 interface ActivityData {
   label: string
@@ -10,13 +13,231 @@ interface ActivityData {
   unit: string
 }
 
+interface Quote {
+  text: string
+  author: string
+}
+
 export function ActivityCircles() {
-  const activities: ActivityData[] = [
-    { label: "TODAY", value: 0, progress: 0, unit: "minutes" },
-    { label: "THIS WEEK", value: 1, progress: 15, unit: "minutes" },
-    { label: "THIS MONTH", value: 6, progress: 20, unit: "minutes" },
-    { label: "THIS YEAR", value: 6, progress: 10, unit: "minutes" },
-  ]
+  const [activities, setActivities] = useState<ActivityData[]>([
+    { label: "PAST 24 HOURS", value: 0, progress: 0, unit: "minutes" },
+    { label: "PAST 7 DAYS", value: 0, progress: 0, unit: "minutes" },
+    { label: "PAST 30 DAYS", value: 0, progress: 0, unit: "minutes" },
+    { label: "PAST 365 DAYS", value: 0, progress: 0, unit: "minutes" },
+  ])
+  
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [dailyQuote, setDailyQuote] = useState<Quote>({ text: "", author: "" })
+  const [dailyInsight, setDailyInsight] = useState<string>("")
+
+  // Function to fetch activity data
+  const fetchActivityData = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      // Get memberId from URL query parameters
+      const urlParams = new URLSearchParams(window.location.search)
+      const memberId = urlParams.get('memberId')
+      
+      if (!memberId) {
+        setError("Member ID is required")
+        setIsLoading(false)
+        return
+      }
+      
+      const response = await fetch(`/api/newactivitycircles?memberId=${memberId}`)
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      // Calculate progress percentages (assuming 100% would be 120 minutes for day, 
+      // 840 for week, 3600 for month, 43800 for year)
+      const maxValues = [120, 840, 3600, 43800]
+      
+      // Update activities with fetched data
+      setActivities([
+        { 
+          label: "PAST 24 HOURS", 
+          value: data.day24h,
+          progress: Math.min(100, (data.day24h / maxValues[0]) * 100), 
+          unit: "minutes" 
+        },
+        { 
+          label: "PAST 7 DAYS", 
+          value: data.days7, 
+          progress: Math.min(100, (data.days7 / maxValues[1]) * 100), 
+          unit: "minutes" 
+        },
+        { 
+          label: "PAST 30 DAYS", 
+          value: data.days30, 
+          progress: Math.min(100, (data.days30 / maxValues[2]) * 100), 
+          unit: "minutes" 
+        },
+        { 
+          label: "PAST 365 DAYS", 
+          value: data.days365, 
+          progress: Math.min(100, (data.days365 / maxValues[3]) * 100), 
+          unit: "minutes" 
+        },
+      ])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch activity data")
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Function to get a random quote
+  const getRandomQuote = () => {
+    const randomIndex = Math.floor(Math.random() * quotes.length)
+    return quotes[randomIndex]
+  }
+
+  // Function to refresh quote
+  const refreshQuote = () => {
+    setDailyQuote(getRandomQuote())
+    // Store in localStorage with timestamp
+    const quoteData = {
+      quote: dailyQuote,
+      timestamp: new Date().getTime()
+    }
+    localStorage.setItem('dailyQuote', JSON.stringify(quoteData))
+  }
+
+  // Function to refresh insight
+  const refreshInsight = () => {
+    setDailyInsight(getRandomFocusMessage())
+    // Store in localStorage with timestamp
+    const insightData = {
+      insight: dailyInsight,
+      timestamp: new Date().getTime()
+    }
+    localStorage.setItem('dailyInsight', JSON.stringify(insightData))
+  }
+
+  // Fetch data on component mount and set up daily content
+  useEffect(() => {
+    fetchActivityData()
+    
+    // Initialize or get stored quote and insight
+    const initializeDailyContent = () => {
+      // Check if we need to refresh the content (new day or first load)
+      const shouldRefreshContent = () => {
+        const currentDate = new Date()
+        // Set to 12:01 AM
+        const refreshTime = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate(),
+          0,
+          1,
+          0
+        )
+        
+        return currentDate.getTime() >= refreshTime.getTime()
+      }
+      
+      // Handle quote
+      const storedQuoteData = localStorage.getItem('dailyQuote')
+      if (storedQuoteData) {
+        const { quote, timestamp } = JSON.parse(storedQuoteData)
+        const lastQuoteDate = new Date(timestamp)
+        const currentDate = new Date()
+        
+        // If it's a new day after 12:01 AM, refresh the quote
+        if (
+          currentDate.getDate() !== lastQuoteDate.getDate() ||
+          currentDate.getMonth() !== lastQuoteDate.getMonth() ||
+          currentDate.getFullYear() !== lastQuoteDate.getFullYear() ||
+          shouldRefreshContent()
+        ) {
+          refreshQuote()
+        } else {
+          setDailyQuote(quote)
+        }
+      } else {
+        refreshQuote()
+      }
+      
+      // Handle insight
+      const storedInsightData = localStorage.getItem('dailyInsight')
+      if (storedInsightData) {
+        const { insight, timestamp } = JSON.parse(storedInsightData)
+        const lastInsightDate = new Date(timestamp)
+        const currentDate = new Date()
+        
+        // If it's a new day after 12:01 AM, refresh the insight
+        if (
+          currentDate.getDate() !== lastInsightDate.getDate() ||
+          currentDate.getMonth() !== lastInsightDate.getMonth() ||
+          currentDate.getFullYear() !== lastInsightDate.getFullYear() ||
+          shouldRefreshContent()
+        ) {
+          refreshInsight()
+        } else {
+          setDailyInsight(insight)
+        }
+      } else {
+        refreshInsight()
+      }
+    }
+    
+    initializeDailyContent()
+    
+    // Set up interval to check time for auto-refresh at 12:01 AM
+    const intervalId = setInterval(() => {
+      const now = new Date()
+      if (now.getHours() === 0 && now.getMinutes() === 1) {
+        refreshQuote()
+        refreshInsight()
+      }
+    }, 60000) // Check every minute
+    
+    return () => clearInterval(intervalId)
+  }, [])
+  
+  // Function to log new activity
+  const logActivity = async (minutes: number) => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search)
+      const memberId = urlParams.get('memberId')
+      const teamId = urlParams.get('teamId')
+      
+      if (!memberId) {
+        setError("Member ID is required")
+        return
+      }
+      
+      const response = await fetch('/api/newactivitycircles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memberId,
+          teamId: teamId || null,
+          minutes
+        }),
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`)
+      }
+      
+      // Refresh data after logging
+      fetchActivityData()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to log activity")
+      console.error(err)
+    }
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -24,6 +245,12 @@ export function ActivityCircles() {
         <h2 className="text-[21px] font-bold text-[#5b06be]">Training Time Tracker</h2>
       </div>
       <div className="bg-white rounded-xl p-2 sm:p-3 flex-grow flex flex-col">
+        {error && (
+          <div className="bg-red-50 text-red-700 p-2 mb-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+        
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
           {activities.map((activity, index) => (
             <motion.div
@@ -66,8 +293,14 @@ export function ActivityCircles() {
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl sm:text-2xl font-bold text-[#5b06be]">{activity.value}</span>
-                    <span className="text-xs sm:text-sm text-gray-600 mt-0.5">{activity.unit}</span>
+                    {isLoading ? (
+                      <div className="h-5 w-5 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
+                    ) : (
+                      <>
+                        <span className="text-xl sm:text-2xl font-bold text-[#5b06be]">{activity.value}</span>
+                        <span className="text-xs sm:text-sm text-gray-600 mt-0.5">{activity.unit}</span>
+                      </>
+                    )}
                   </div>
                 </div>
                 <span className="text-xs font-medium text-gray-600 uppercase tracking-wider mt-2">
@@ -84,15 +317,19 @@ export function ActivityCircles() {
           <div className="border border-[#ddd] rounded-xl p-2 sm:p-3">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-[19px] font-black text-[#5b06be]">Quote of the Day</h4>
-              <button className="text-gray-400 hover:text-gray-600">
+              <button 
+                className="text-gray-400 hover:text-gray-600" 
+                onClick={refreshQuote}
+                aria-label="Refresh quote"
+              >
                 <RotateCcw className="h-4 w-4" />
               </button>
             </div>
             <div className="bg-white rounded-xl border border-[#ddd] p-2 sm:p-3 flex flex-col justify-between h-[calc(100%-2.5rem)]">
               <p className="text-center text-[15px] font-semibold">
-                "Don't wish it were easier, wish you were better."
+                "{dailyQuote.text}"
               </p>
-              <p className="text-right text-gray-600 mt-3 text-sm">Jim Rohn</p>
+              <p className="text-right text-gray-600 mt-3 text-sm">{dailyQuote.author}</p>
             </div>
           </div>
 
@@ -100,13 +337,17 @@ export function ActivityCircles() {
           <div className="border border-[#ddd] rounded-xl p-2 sm:p-3">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-[19px] font-black text-[#5b06be]">Daily Insight</h4>
-              <button className="text-gray-400 hover:text-gray-600">
+              <button 
+                className="text-gray-400 hover:text-gray-600" 
+                onClick={refreshInsight}
+                aria-label="Refresh insight"
+              >
                 <RotateCcw className="h-4 w-4" />
               </button>
             </div>
             <div className="bg-white rounded-xl border border-[#ddd] p-2 sm:p-3 flex items-center h-[calc(100%-2.5rem)]">
               <p className="text-[15px] font-semibold">
-                Worth remembering: sharing tenant screening through situation examples rather than rules.
+                {dailyInsight}
               </p>
             </div>
           </div>
